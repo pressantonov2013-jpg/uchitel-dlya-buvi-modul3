@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Учитель для Буви. Модуль 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#25324a; --ink-soft:#4a5d77;
+  --teal:#10c9a5; --blue:#1aa6d8; --gold:#f6c244; --gold-d:#d19a22; --pink:#ff8fa8; --sun:#f7d44c;
+  --paper:#ffffff; --mint:#f0fcf9; --mint-b:#cdeee7;
+  --f:'Montserrat','Segoe UI',system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;font-family:var(--f);color:var(--ink);background:#ffffff;overflow-x:hidden}
+button,input{font-family:inherit}
+
+/* ===== фон ===== */
+.hero-bg{position:absolute;left:0;top:0;width:100%;height:600px;z-index:0;pointer-events:none;
+  background:linear-gradient(120deg,#0fd9a7 0%,#16bdc4 45%,#1f9fdb 100%);clip-path:ellipse(92% 100% at 0% 0%)}
+.hero-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(500px 300px at 85% 15%,rgba(255,255,255,.18),transparent 70%)}
+.bg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:hidden;z-index:0}
+.glyph{position:absolute;bottom:-60px;font-weight:900;color:#1aa6d8;opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.13}85%{opacity:.09}100%{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+.page{position:relative;overflow:hidden}
+.app{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:18px 20px 40px}
+
+/* ===== шапка ===== */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:18px;color:#fff}
+.head-l{min-width:0}
+.site{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:15px;letter-spacing:.02em;color:#fff;text-decoration:none;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.45);padding:6px 14px;border-radius:99px}
+.site:hover{background:rgba(255,255,255,.3)}
+.ribbon{display:inline-block;margin:14px 0 12px;background:linear-gradient(90deg,#f8d36b,#f2b94a);color:var(--ink);font-weight:700;font-size:14px;line-height:1.3;padding:8px 26px 8px 14px;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);max-width:100%}
+h1{margin:0;font-weight:900;font-size:clamp(28px,4.4vw,52px);line-height:1.02;letter-spacing:-.01em;text-transform:uppercase;color:#fff;text-shadow:0 3px 0 rgba(10,80,120,.18)}
+.lead{margin:8px 0 0;font-size:clamp(15px,1.6vw,19px);font-weight:500;color:#effffb}
+.lead b{font-weight:800;color:#fff3bd}
+.hud{display:flex;align-items:center;gap:12px}
+.score{display:flex;align-items:center;gap:14px;background:#fff;color:var(--ink);border-radius:22px;padding:10px 16px;box-shadow:0 10px 30px rgba(10,80,120,.25)}
+.score .big{font-weight:900;font-size:30px;line-height:1;white-space:nowrap}
+.score .big small{font-size:14px;color:var(--ink-soft);font-weight:700;margin:0 3px}
+.score .lbl{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:3px}
+.tube{position:relative;width:150px;height:18px;border-radius:12px;background:#e3f3f3;border:2px solid #cfe9e8;overflow:hidden}
+.tube i{position:absolute;left:0;top:0;bottom:0;width:0;border-radius:10px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .9s cubic-bezier(.2,.9,.2,1)}
+.tube i::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.4) 0 8px,transparent 8px 18px);animation:slide 1.2s linear infinite}
+@keyframes slide{to{background-position:36px 0}}
+.snd{width:46px;height:46px;border-radius:16px;border:0;background:#fff;font-size:21px;cursor:pointer;box-shadow:0 8px 20px rgba(10,80,120,.25);transition:.2s}
+.snd:hover{transform:scale(1.08)}
+
+.who{display:inline-block;font-weight:800;font-size:12px;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:99px;color:#fff;background:linear-gradient(90deg,var(--blue),var(--teal));margin-bottom:8px}
+.dialog.from-b .who,.duo .m.b .who{background:linear-gradient(90deg,#f0b232,#ff8fa8)}
+.say{font-size:15.5px;line-height:1.42;font-weight:600}
+.say em{font-style:normal;color:#0c8fb8;font-weight:800}
+.pop{animation:pop .45s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{0%{transform:scale(.92) translateY(8px);opacity:.3}100%{transform:none;opacity:1}}
+.char{position:absolute;overflow:visible;transition:filter .35s}
+.emote{position:absolute;pointer-events:none;font-weight:800;font-size:17px;color:var(--ink);background:#fff;border-radius:99px;padding:3px 12px;box-shadow:0 6px 16px rgba(10,80,120,.3);opacity:0;white-space:nowrap}
+.emote.go{animation:emote 1.5s ease-out forwards}
+@keyframes emote{0%{opacity:0;transform:translateY(10px) scale(.6)}15%{opacity:1;transform:translateY(0) scale(1.08)}80%{opacity:1}100%{opacity:0;transform:translateY(-26px) scale(1)}}
+#em-b{right:30px;top:10px}#em-l{left:150px;top:6px}
+
+/* анимации персонажей */
+.float{animation:bob 3.8s ease-in-out infinite}
+#buvya .float{animation-duration:3.2s;animation-delay:-1s}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.react.hop{animation:hop .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes hop{0%{transform:translateY(0)}35%{transform:translateY(-18px)}100%{transform:translateY(0)}}
+.react.shake{animation:shake .6s ease-in-out}
+@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}15%{transform:translateX(-8px) rotate(-3deg)}35%{transform:translateX(7px) rotate(3deg)}55%{transform:translateX(-5px) rotate(-2deg)}75%{transform:translateX(3px)}}
+[data-mood=cheer] .float{animation:jump .55s ease-in-out infinite}
+@keyframes jump{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.eyes-open{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+#lingva .wave{transform-origin:70px 208px;animation:wave 2.4s ease-in-out infinite}
+#buvya .wave{transform-origin:74px 205px;animation:wave 2.4s ease-in-out infinite}
+[data-mood=happy] .wave,[data-mood=cheer] .wave{animation:wave .6s ease-in-out infinite !important}
+@keyframes wave{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(9deg)}}
+.wave2{display:none;transform-origin:180px 208px}
+[data-mood=cheer] .wave2{display:inline;animation:wave2 .5s ease-in-out infinite}
+@keyframes wave2{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-10deg)}}
+.tail{transform-origin:150px 212px;animation:tail 2.6s ease-in-out infinite}
+[data-mood=happy] .tail,[data-mood=cheer] .tail{animation-duration:.7s}
+@keyframes tail{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(10deg)}}
+.tw{animation:tw 2.4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.tw.t2{animation-delay:-.8s}.tw.t3{animation-delay:-1.6s}
+@keyframes tw{0%,100%{transform:scale(.5);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+.ear-l{transform-origin:86px 74px}.ear-r{transform-origin:134px 74px}
+.ear-l,.ear-r{transition:transform .3s}
+[data-mood=oops] .ear-l{transform:rotate(-20deg)}[data-mood=oops] .ear-r{transform:rotate(20deg)}
+.pupil{transition:transform .3s}
+[data-mood=think] .pupil{transform:translate(2px,-3px)}
+.e-happy,.e-oops,.mo-happy,.mo-oops,.mo-think,.sweat,.brow-oops{display:none}
+[data-mood=happy] .e-open,[data-mood=cheer] .e-open,[data-mood=oops] .e-open{display:none}
+[data-mood=happy] .e-happy,[data-mood=cheer] .e-happy{display:inline}
+[data-mood=oops] .e-oops{display:inline}
+[data-mood=happy] .mo-idle,[data-mood=cheer] .mo-idle,[data-mood=oops] .mo-idle,[data-mood=think] .mo-idle{display:none}
+[data-mood=happy] .mo-happy,[data-mood=cheer] .mo-happy{display:inline}
+[data-mood=oops] .mo-oops{display:inline}
+[data-mood=think] .mo-think{display:inline}
+[data-mood=oops] .sweat{display:inline;animation:sweat 1.2s ease-in infinite}
+@keyframes sweat{0%{transform:translateY(-4px);opacity:0}30%{opacity:1}100%{transform:translateY(14px);opacity:0}}
+[data-mood=oops] .brow-idle{display:none}[data-mood=oops] .brow-oops{display:inline}
+.lab{position:relative;background:#fff;border:1px solid #e1f3f0;border-radius:30px;padding:20px 22px 22px;box-shadow:0 26px 60px rgba(14,100,140,.25)}
+.lab-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.chip{background:linear-gradient(90deg,var(--teal),var(--blue));color:#fff;padding:5px 14px;border-radius:99px;font-weight:800;font-size:13px;white-space:nowrap}
+.tools{display:flex;gap:10px;align-items:center}
+.btn{border:0;border-radius:16px;padding:10px 16px;font-weight:800;font-size:14.5px;cursor:pointer;color:var(--ink);background:linear-gradient(180deg,#ffe38a,#f6bf3f);box-shadow:0 5px 0 var(--gold-d);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--gold-d)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--gold-d)}
+.btn.pulse{animation:btnpulse 1.1s ease-in-out infinite}
+@keyframes btnpulse{0%,100%{box-shadow:0 5px 0 var(--gold-d),0 0 0 0 rgba(246,194,68,.7)}50%{box-shadow:0 5px 0 var(--gold-d),0 0 0 12px rgba(246,194,68,0)}}
+.btn.go{color:#fff;background:linear-gradient(180deg,#25dcb8,#10b896);box-shadow:0 5px 0 #0b8a70}
+.btn.go:hover{box-shadow:0 7px 0 #0b8a70}.btn.go:active{box-shadow:0 2px 0 #0b8a70}
+.btn.go.pulse{animation:btnpulse2 1.1s ease-in-out infinite}
+@keyframes btnpulse2{0%,100%{box-shadow:0 5px 0 #0b8a70,0 0 0 0 rgba(16,201,165,.6)}50%{box-shadow:0 5px 0 #0b8a70,0 0 0 12px rgba(16,201,165,0)}}
+.mist{font-weight:800;font-size:13.5px;color:#c23a62;background:#fff0f4;border:1px solid #ffc7d5;padding:8px 12px;border-radius:14px;white-space:nowrap}
+.enter{animation:enter .6s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes enter{0%{transform:translateY(24px) scale(.9);opacity:0}100%{transform:none;opacity:1}}
+.leave{animation:leave .35s ease-in forwards}
+@keyframes leave{to{transform:translateY(-16px) scale(.85);opacity:0}}
+/* ===== финал и значок ===== */
+.finale{display:none;text-align:center;padding:6px 4px 0}
+.finale.show{display:block;animation:enter .7s cubic-bezier(.3,1.4,.5,1) both}
+.kick{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0d9a82}
+.finale h2{font-weight:900;font-size:clamp(24px,3.2vw,38px);margin:6px 0 6px;text-transform:uppercase;color:var(--ink)}
+.fin-sub{max-width:640px;margin:0 auto 18px;font-weight:600;font-size:16px;line-height:1.5;color:var(--ink-soft)}
+.namebox{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:16px}
+.namebox label{font-weight:700;font-size:14px;color:var(--ink-soft)}
+.namebox input{width:min(380px,100%);border:2px solid var(--mint-b);border-radius:14px;padding:11px 14px;font-size:16px;font-weight:600;color:var(--ink);text-align:center;background:#fff;outline:none}
+.namebox input:focus{border-color:var(--blue);box-shadow:0 0 0 4px rgba(26,166,216,.18)}
+.badge{position:relative;width:min(440px,100%);margin:0 auto 14px;background:#fff;border:4px solid var(--gold);border-radius:30px;overflow:hidden;box-shadow:0 0 0 6px #fff5d0,0 22px 50px rgba(14,100,140,.3);text-align:center}
+.b-top{background:linear-gradient(120deg,#0fd9a7,#1f9fdb);color:#fff;padding:14px 16px 62px;font-weight:800;font-size:14px;letter-spacing:.06em}
+.b-top small{display:block;font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:11px;opacity:.9;margin-top:2px}
+.b-medal{width:118px;height:118px;margin:-52px auto 0;position:relative;filter:drop-shadow(0 8px 10px rgba(14,100,140,.3))}
+.b-body{padding:6px 22px 20px}
+.b-title{font-weight:900;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:#c58a00;margin-top:6px}
+.b-mod{font-weight:900;font-size:25px;margin:4px 0 2px}
+.b-mod-sub{font-weight:700;font-size:15px;line-height:1.35;color:var(--ink-soft)}
+.b-game{margin-top:10px;font-weight:700;font-size:14.5px;line-height:1.4}
+.b-name{margin:12px auto 0;padding:9px 14px;border-radius:14px;background:var(--mint);border:2px dashed var(--mint-b);font-weight:800;font-size:19px;min-height:46px;word-break:break-word}
+.b-name.empty{color:#97b3b5;font-weight:600;font-size:15px}
+.b-stars{display:flex;justify-content:center;gap:6px;margin:12px 0 4px}
+.star{font-size:34px;transform:scale(0);animation:star .7s cubic-bezier(.3,1.8,.5,1) forwards}
+.star.off{filter:grayscale(1) opacity(.3)}
+@keyframes star{0%{transform:scale(0) rotate(-90deg)}100%{transform:scale(1) rotate(0)}}
+.b-stats{font-weight:700;font-size:13px;color:var(--ink-soft)}
+.b-date{margin-top:6px;font-weight:600;font-size:12.5px;color:#7a8ea6}
+.proof{max-width:640px;margin:0 auto 22px;background:#fff9e3;border:2px solid #f6dc86;border-radius:20px;padding:14px 18px;font-weight:600;font-size:15px;line-height:1.5;text-align:left}
+.proof b{font-weight:800}
+.proof small{display:block;margin-top:6px;font-size:12.5px;color:var(--ink-soft)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-bottom:18px}
+.duo .m{background:var(--mint);border:2px solid var(--mint-b);border-radius:22px;padding:14px 16px;font-weight:600;font-size:15px;line-height:1.45}
+.duo .m .who{margin-bottom:6px}
+.glossary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:left;margin-bottom:20px}
+.gl{border-radius:18px;padding:10px 12px;background:color-mix(in srgb,var(--c) 14%,#fff);border:2px solid color-mix(in srgb,var(--c) 60%,#fff);font-weight:600;font-size:12.5px;line-height:1.35;color:var(--ink-soft)}
+.gl b{display:block;font-size:14px;color:var(--ink);margin-bottom:2px;font-weight:800}
+.gl-h{font-weight:800;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px;text-align:left}
+canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+/* ===== сцена: Лингва слева, Буквёныш справа ===== */
+.stage{display:grid;grid-template-columns:268px minmax(0,1fr) 268px;gap:20px;align-items:start}
+.side{position:sticky;top:14px;display:flex;flex-direction:column;gap:22px}
+.bub{position:relative;background:#fff;color:var(--ink);border-radius:24px;padding:14px 16px 13px;min-height:138px;box-shadow:0 14px 36px rgba(10,80,120,.28);transition:transform .3s,opacity .3s,box-shadow .3s}
+.bub::after{content:"";position:absolute;bottom:-12px;left:calc(50% - 13px);width:26px;height:26px;background:#fff;transform:rotate(45deg);border-radius:0 0 8px 0}
+.side.talk .bub{transform:translateY(-3px);box-shadow:0 0 0 4px rgba(255,255,255,.55),0 18px 40px rgba(10,80,120,.34)}
+.side.quiet .bub{opacity:.84}
+.side.quiet .char{filter:saturate(.85) brightness(.97)}
+.bub .who{margin-bottom:6px}
+.side.b .who{background:linear-gradient(90deg,#f0b232,#ff8fa8)}
+.say{font-size:14.5px}
+.fig{position:relative;height:262px}
+#lingva{left:50%;margin-left:-113px;bottom:26px;width:226px;height:auto}
+#buvya{left:50%;margin-left:-92px;bottom:20px;width:184px;height:auto}
+.nametag{position:absolute;left:50%;transform:translateX(-50%);bottom:-2px;font-weight:800;font-size:13px;padding:5px 14px;border-radius:99px;color:var(--ink);background:linear-gradient(180deg,#ffe38a,#f6bf3f);box-shadow:0 4px 0 var(--gold-d)}
+#em-l{left:calc(50% + 40px);top:4px;right:auto}#em-b{right:auto;left:calc(50% - 90px);top:10px}
+
+/* ===== небо с созвездием ===== */
+.lab{padding:16px 18px 20px}
+.sky{position:relative;border-radius:24px;overflow:hidden;margin-bottom:16px;background:radial-gradient(120% 90% at 20% 0%,#2f7467 0%,#1b4d46 55%,#103632 100%);box-shadow:inset 0 0 0 6px #b98a52,inset 0 0 0 8px #8c6234}
+.sky svg{display:block;width:100%;height:auto;position:relative}
+.dots{position:absolute;inset:0;pointer-events:none}
+.dots i{position:absolute;border-radius:50%;background:#fff;opacity:.2;animation:twb 3s ease-in-out infinite}
+@keyframes twb{0%,100%{opacity:.12}50%{opacity:.85}}
+.edge{fill:none;stroke-linecap:round}
+.edge.base{stroke:#a9d9cd;stroke-width:2;stroke-dasharray:3 8;opacity:.5}
+.edge.lit{stroke:#ffd96a;stroke-width:3.5;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 5px #ffd96a)}
+.edge.lit.on{animation:drawe .9s ease-out forwards}
+@keyframes drawe{to{stroke-dashoffset:0}}
+.st .spark{fill:#a9d9cd;opacity:.85;transform-box:fill-box;transform-origin:center;animation:dimtw 3s ease-in-out infinite}
+@keyframes dimtw{0%,100%{transform:scale(.8);opacity:.5}50%{transform:scale(1.15);opacity:1}}
+.st .halo{fill:#ffd96a;opacity:0;transition:opacity .6s}
+.st .med{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .65s cubic-bezier(.3,1.7,.5,1)}
+.st .lab{opacity:0;transition:opacity .5s .2s;font-weight:800;font-size:14.5px;fill:#fff;text-anchor:middle;paint-order:stroke;stroke:#123a35;stroke-width:4px;stroke-linejoin:round}
+.st.on .med{transform:scale(1)}
+.st.on .spark{opacity:0;animation:none}
+.st.on .halo{opacity:.3;animation:halo 2.6s ease-in-out infinite}
+.st.on .lab{opacity:1}
+@keyframes halo{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.st .halo{transform-box:fill-box;transform-origin:center}
+.st .ringc{fill:none;stroke:#fff;stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+.st.ring .ringc{opacity:.95;animation:ringp 1.8s ease-out infinite}
+@keyframes ringp{0%{transform:scale(1);opacity:.95}100%{transform:scale(1.7);opacity:0}}
+.cap{font-weight:900;font-size:14px;letter-spacing:.18em;fill:#cdebe3;text-anchor:start;transition:fill .8s}
+.sky.shine .cap{fill:#ffd96a;filter:drop-shadow(0 0 6px #ffd96a)}
+.sky.shine .st .halo{opacity:.6}
+.sky.shine::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 60% 50%,rgba(255,226,130,.28),transparent 70%);animation:shn 2.4s ease-in-out infinite;pointer-events:none}
+@keyframes shn{0%,100%{opacity:.5}50%{opacity:1}}
+.fly{position:fixed;left:0;top:0;z-index:60;font-size:34px;line-height:1;pointer-events:none;will-change:transform;filter:drop-shadow(0 0 8px rgba(255,217,106,.9))}
+
+/* ===== задание ===== */
+.lab-head{margin-bottom:14px}
+.rname{font-weight:700;font-size:15px;color:var(--ink-soft)}
+.lh-l{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.threads{font-weight:800;font-size:13px;color:#8a6a00;background:#fff6d4;border:1px solid #f6dc86;padding:6px 12px;border-radius:99px;white-space:nowrap}
+.q{background:var(--mint);border:2px solid var(--mint-b);border-radius:22px;padding:14px 18px 16px;margin-bottom:14px}
+.q-kick{font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#c58a00;margin-bottom:6px}
+.q-text{font-weight:700;font-size:clamp(16px,1.9vw,21px);line-height:1.4}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.opt{position:relative;display:flex;align-items:center;gap:12px;text-align:left;border:3px solid #c3ece4;border-radius:20px;background:#fff;padding:10px 14px;cursor:pointer;color:var(--ink);font-weight:800;font-size:15.5px;line-height:1.25;box-shadow:0 6px 0 #9fdccf,0 10px 20px rgba(20,60,90,.1);transition:transform .2s cubic-bezier(.3,1.5,.5,1),box-shadow .2s,background .3s,border-color .3s,opacity .3s;-webkit-tap-highlight-color:transparent}
+.opt:hover:not(:disabled){transform:translateY(-3px)}
+.opt:disabled{cursor:default}
+.mico{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:#e9f9f6;border:2px solid #b9e5dc;overflow:hidden}
+.mico img{width:100%;height:100%;object-fit:cover}
+.opt .nm{min-width:0;overflow-wrap:anywhere}
+.opt .tick{position:absolute;top:-10px;right:-8px;width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-weight:900;font-size:15px;display:none;place-items:center;border:3px solid #fff;box-shadow:0 3px 8px rgba(20,60,90,.3)}
+.opt.ok{border-color:var(--c);background:linear-gradient(145deg,color-mix(in srgb,var(--c) 18%,#fff),color-mix(in srgb,var(--c) 38%,#fff));box-shadow:0 6px 0 color-mix(in srgb,var(--c) 70%,#25324a),0 0 28px color-mix(in srgb,var(--c) 55%,transparent);animation:win .7s cubic-bezier(.3,1.6,.5,1)}
+.opt.ok .mico{background:#fff;border-color:var(--c)}
+.opt.ok .tick{display:grid;animation:pop .5s .1s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes win{0%{transform:scale(1)}35%{transform:scale(1.06) rotate(-1deg)}100%{transform:scale(1)}}
+.opt.no{border-color:#ff5d7e;background:linear-gradient(145deg,#ffe6ec,#ffc9d5);animation:wrong .55s ease-in-out;opacity:.75}
+@keyframes wrong{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px) rotate(-1.5deg)}35%{transform:translateX(9px) rotate(1.5deg)}55%{transform:translateX(-7px)}75%{transform:translateX(5px)}}
+.opt.gone{opacity:.22;pointer-events:none;box-shadow:none}
+.opt.dimmed{opacity:.45}
+
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:12px 16px}
+.mcol{display:grid;gap:10px;align-content:start}
+.mc{position:relative;display:flex;align-items:center;gap:10px;border:3px solid #c3ece4;border-radius:18px;background:#fff;padding:9px 12px;cursor:pointer;font-weight:700;font-size:14px;line-height:1.3;color:var(--ink);text-align:left;box-shadow:0 5px 0 #9fdccf;transition:transform .2s cubic-bezier(.3,1.5,.5,1),background .3s,border-color .3s;-webkit-tap-highlight-color:transparent}
+.mc.sc{font-weight:800;font-size:15px}
+.mc:hover:not(.matched){transform:translateY(-2px)}
+.mc.selected{border-color:var(--ink);transform:translateY(-3px) scale(1.02);box-shadow:0 5px 0 var(--gold-d),0 0 0 5px rgba(37,50,74,.14);background:#fff8dc}
+.mc.matched{cursor:default;border-color:var(--c);background:linear-gradient(145deg,color-mix(in srgb,var(--c) 18%,#fff),color-mix(in srgb,var(--c) 36%,#fff));box-shadow:0 5px 0 color-mix(in srgb,var(--c) 70%,#25324a);animation:win .7s cubic-bezier(.3,1.6,.5,1)}
+.mc.matched .mico{background:#fff;border-color:var(--c)}
+.mc.wrong{animation:wrong .55s ease-in-out;border-color:#ff5d7e;background:#ffe6ec}
+.mc.hinted{animation:hinted 1s ease-in-out infinite;border-color:var(--gold)}
+@keyframes hinted{0%,100%{box-shadow:0 5px 0 #9fdccf,0 0 0 4px rgba(246,194,68,.4)}50%{box-shadow:0 5px 0 #9fdccf,0 0 0 12px rgba(246,194,68,.12),0 0 30px rgba(246,194,68,.95)}}
+
+.journal{margin-top:16px;min-height:118px;border-radius:24px;padding:14px 18px;background:#fff9e8;border:2px solid #f3e1a6;display:flex;gap:16px;align-items:center}
+.j-icon{flex:none;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;font-size:38px;background:#fff;border:4px solid var(--mint-b);overflow:hidden}
+.j-icon img{width:100%;height:100%;object-fit:cover}
+.j-main{flex:1;min-width:0}
+.j-kicker{font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#c58a00;margin-bottom:3px}
+.j-title{font-weight:900;font-size:clamp(18px,2vw,22px);margin-bottom:1px}
+.j-role{font-size:13px;font-weight:700;color:#0d9a82;margin-bottom:6px}
+.j-fact{font-size:14.5px;line-height:1.45;font-weight:600;color:#33445e}
+.j-act{flex:none}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%}
+.step{display:flex;gap:12px;align-items:flex-start;font-weight:600;font-size:14px;line-height:1.4;color:#33445e}
+.step .n{flex:none;width:36px;height:36px;border-radius:12px;display:grid;place-items:center;font-size:18px;background:#fff;box-shadow:0 3px 10px rgba(20,60,90,.12)}
+
+/* ===== финал: дополнения ===== */
+.glossary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;text-align:left;margin-bottom:20px}
+.gl{border-radius:18px;padding:10px 12px;background:color-mix(in srgb,var(--c) 14%,#fff);border:2px solid color-mix(in srgb,var(--c) 60%,#fff);font-weight:600;font-size:12.5px;line-height:1.35;color:var(--ink-soft)}
+.gl b{display:block;font-size:14px;color:var(--ink);margin-bottom:2px;font-weight:800}
+.gl-h{font-weight:800;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 10px;text-align:left}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;text-align:left;margin-bottom:18px}
+.duo .m{background:var(--mint);border:2px solid var(--mint-b);border-radius:22px;padding:14px 16px;font-weight:600;font-size:15px;line-height:1.45}
+.duo .m .who{margin-bottom:6px}
+.duo .m.b .who{background:linear-gradient(90deg,#f0b232,#ff8fa8)}
+.sky-mini{max-width:520px;margin:0 auto 14px}
+
+/* ===== адаптив ===== */
+@media (max-width:1060px){
+  .stage{grid-template-columns:1fr 1fr;grid-template-areas:"fl fb" "bl bl" "bb bb" "main main";gap:10px 14px}
+  .side{display:contents}
+  .fig-l{grid-area:fl}.fig-b{grid-area:fb}
+  .bub-l{grid-area:bl;justify-self:start;width:min(100%,520px)}
+  .bub-b{grid-area:bb;justify-self:end;width:min(100%,520px)}
+  .lab{grid-area:main;margin-top:8px}
+  .bub{min-height:0}
+  .bub::after{bottom:auto;top:-12px;border-radius:8px 0 0 0}
+  .bub-l::after{left:60px}.bub-b::after{left:auto;right:60px}
+  .side.talk .bub{transform:none}
+  .fig{height:236px}
+  #lingva{width:200px;margin-left:-100px}#buvya{width:164px;margin-left:-82px}
+  .glossary{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:700px){
+  .app{padding:12px 16px 28px}
+  .hero-bg{height:520px;clip-path:ellipse(130% 100% at 0% 0%)}
+  .ribbon{font-size:12.5px}
+  .tube{width:100px}.score{padding:8px 12px;gap:10px}.score .big{font-size:24px}
+  .hud{width:100%;justify-content:space-between}
+  .fig{height:196px}
+  #lingva{width:158px;margin-left:-79px;bottom:22px}#buvya{width:130px;margin-left:-65px;bottom:18px}
+  .say{font-size:14px}
+  .lab{padding:12px 12px 16px;border-radius:24px}
+  .rname{display:none}
+  .opts{grid-template-columns:1fr}
+  .opt{padding:8px 12px;font-size:15px}
+  .mico{width:40px;height:40px;font-size:21px}
+  .match{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:8px}
+  .mc{padding:7px 8px;font-size:12px;gap:6px;border-radius:14px}.mc.sc{font-size:12.5px}
+  .mc .mico{display:none}
+  .journal{flex-direction:column;align-items:flex-start;gap:10px;padding:14px}
+  .j-icon{width:56px;height:56px;font-size:30px}
+  .steps{grid-template-columns:1fr}
+  .duo{grid-template-columns:1fr}
+  .st .lab{font-size:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}.glyph{display:none}}
+
+.hubc{transform-box:fill-box;transform-origin:center}
+.sky.shine .hub .hubc{animation:halo 2s ease-in-out infinite}
+.opt.comp .nm{font-size:15px}
+
+</style>
+</head>
+<body>
+<div class="page">
+<div class="hero-bg" aria-hidden="true"></div>
+<div class="bg" id="bg" aria-hidden="true"></div>
+
+<div class="app">
+  <header class="top">
+    <div class="head-l">
+      <a class="site" href="https://lingvapolka.ru/" target="_blank" rel="noopener">lingvapolka.ru</a>
+      <div><span class="ribbon">Модуль 3. Компетенции современного учителя</span></div>
+      <h1>Учитель для Буви</h1>
+      <p class="lead">Игра «Идеи и концепции»: найдите компетенции современного учителя</p>
+    </div>
+    <div class="hud">
+      <div class="score" aria-live="polite">
+        <div>
+          <div class="lbl">📋 Компетенции в списке</div>
+          <div class="big"><span id="count">0</span><small>из</small>7</div>
+        </div>
+        <div class="tube"><i id="tube"></i></div>
+      </div>
+      <button class="snd" id="snd" title="Звук вкл/выкл" aria-label="Звук">🔊</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <!-- ================= ЛИНГВА (слева) ================= -->
+    <aside class="side l quiet" id="sideL">
+      <div class="bub bub-l" aria-live="polite"><div class="who">Лингва</div><div class="say" id="sayL"></div></div>
+      <div class="fig fig-l">
+        <svg id="lingva" class="char" data-mood="idle" viewBox="0 0 240 260" role="img" aria-label="Лингва — виртуальный помощник">
+          <defs>
+            <clipPath id="clL"><path d="M28 128 C20 48 68 12 124 12 C186 12 226 52 220 132 C217 190 206 218 196 236 L48 236 C36 216 31 180 28 128Z"/></clipPath>
+            <path id="spk" d="M0 -9 Q1 -1 9 0 Q1 1 0 9 Q-1 1 -9 0 Q-1 -1 0 -9Z"/>
+          </defs>
+          <path d="M28 128 C20 48 68 12 124 12 C186 12 226 52 220 132 C217 190 206 218 196 236 L48 236 C36 216 31 180 28 128Z" fill="#f7d44c"/>
+          <g fill="#fff"><g transform="translate(60 52)"><use class="tw" href="#spk"/></g><g transform="translate(196 74)"><use class="tw t2" href="#spk" transform="scale(.8)"/></g><g transform="translate(206 160)"><use class="tw t3" href="#spk" transform="scale(.6)"/></g><g transform="translate(168 30)"><use class="tw t2" href="#spk" transform="scale(.55)"/></g></g>
+          <g clip-path="url(#clL)"><g class="react" id="r-l"><g class="float" stroke="#25324a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <!-- волосы сзади -->
+            <path d="M80 92 C74 46 100 26 126 26 C156 26 178 46 172 94 C171 120 176 138 184 152 L70 152 C80 138 82 114 80 92Z" fill="#fbdc7e"/>
+            <!-- шея -->
+            <path d="M110 146 L110 178 Q125 190 140 178 L140 146Z" fill="#ffe3d2"/>
+            <!-- свитер -->
+            <path d="M46 270 C46 206 78 176 112 172 L138 172 C172 176 204 206 204 270Z" fill="#1d86b8"/>
+            <g stroke="#4aa9d6" stroke-width="2.5" fill="none"><path d="M76 206 L72 268"/><path d="M96 192 L94 268"/><path d="M116 186 L116 268"/><path d="M136 186 L136 268"/><path d="M156 192 L158 268"/><path d="M176 206 L180 268"/></g>
+            <path d="M108 172 Q125 192 142 172" fill="#156a93"/>
+            <!-- рука, которой машет -->
+            <g class="wave">
+              <path d="M70 208 Q46 198 46 150" stroke="#25324a" stroke-width="34" fill="none"/>
+              <path d="M70 208 Q46 198 46 150" stroke="#1d86b8" stroke-width="28" fill="none" stroke-linecap="round"/>
+              <g fill="#ffe3d2"><circle cx="46" cy="132" r="15"/></g>
+              <g fill="none"><path d="M36 122 L32 98" stroke="#25324a" stroke-width="11"/><path d="M43 118 L41 90" stroke="#25324a" stroke-width="11"/><path d="M51 118 L52 90" stroke="#25324a" stroke-width="11"/><path d="M58 123 L63 99" stroke="#25324a" stroke-width="11"/>
+                <path d="M36 122 L32 98" stroke="#ffe3d2" stroke-width="5.5"/><path d="M43 118 L41 90" stroke="#ffe3d2" stroke-width="5.5"/><path d="M51 118 L52 90" stroke="#ffe3d2" stroke-width="5.5"/><path d="M58 123 L63 99" stroke="#ffe3d2" stroke-width="5.5"/></g>
+              <circle cx="46" cy="132" r="12.5" fill="#ffe3d2" stroke="none"/>
+            </g>
+            <!-- вторая рука (радость) -->
+            <g class="wave2">
+              <path d="M180 208 Q204 198 204 150" stroke="#25324a" stroke-width="34" fill="none"/>
+              <path d="M180 208 Q204 198 204 150" stroke="#1d86b8" stroke-width="28" fill="none" stroke-linecap="round"/>
+              <circle cx="204" cy="132" r="15" fill="#ffe3d2"/>
+              <path d="M194 122 L198 98" stroke="#25324a" stroke-width="11"/><path d="M201 118 L203 90" stroke="#25324a" stroke-width="11"/><path d="M209 118 L208 90" stroke="#25324a" stroke-width="11"/><path d="M216 123 L211 99" stroke="#25324a" stroke-width="11"/>
+              <path d="M194 122 L198 98" stroke="#ffe3d2" stroke-width="5.5"/><path d="M201 118 L203 90" stroke="#ffe3d2" stroke-width="5.5"/><path d="M209 118 L208 90" stroke="#ffe3d2" stroke-width="5.5"/><path d="M216 123 L211 99" stroke="#ffe3d2" stroke-width="5.5"/>
+              <circle cx="204" cy="132" r="12.5" fill="#ffe3d2" stroke="none"/>
+            </g>
+            <!-- голова -->
+            <circle cx="84" cy="106" r="8" fill="#ffe3d2"/><circle cx="166" cy="106" r="8" fill="#ffe3d2"/>
+            <ellipse cx="125" cy="102" rx="41" ry="45" fill="#fff0e6"/>
+            <path d="M82 98 C74 118 76 142 70 156 C84 154 94 148 98 140 C90 128 88 112 90 98Z" fill="#fbdc7e"/>
+            <path d="M168 98 C176 118 174 142 180 156 C166 154 156 148 152 140 C160 128 162 112 160 98Z" fill="#fbdc7e"/>
+            <path d="M83 98 C82 60 110 46 132 52 C156 58 168 78 167 100 C152 94 138 80 130 66 C122 84 104 94 83 98Z" fill="#fbdc7e"/>
+            <path d="M104 62 Q118 54 130 58 M96 74 Q106 66 114 66" fill="none" stroke-width="2"/>
+            <path d="M150 60 l2.6 6 6.4 .8 -4.8 4.2 1.4 6.2 -5.6 -3.2 -5.6 3.2 1.4 -6.2 -4.8 -4.2 6.4 -.8z" fill="#10c9a5" stroke-width="2"/>
+            <!-- щёки -->
+            <g stroke="none" fill="#ff9fb4" opacity=".8"><circle cx="97" cy="123" r="9"/><circle cx="153" cy="123" r="9"/></g>
+            <!-- брови -->
+            <g class="brow-idle" fill="none" stroke-width="2.5"><path d="M98 94 Q108 89 118 93"/><path d="M132 93 Q142 89 152 94"/></g>
+            <g class="brow-oops" fill="none" stroke-width="2.5"><path d="M98 98 L118 90"/><path d="M132 90 L152 98"/></g>
+            <!-- глаза -->
+            <g class="eyes-open e-open" stroke="none"><ellipse cx="108" cy="108" rx="4.4" ry="6.4" fill="#25324a"/><ellipse cx="142" cy="108" rx="4.4" ry="6.4" fill="#25324a"/>
+              <g class="pupil" fill="#fff"><circle cx="109.6" cy="105.6" r="1.6"/><circle cx="143.6" cy="105.6" r="1.6"/></g></g>
+            <g class="e-happy" fill="none" stroke-width="3.2"><path d="M101 111 Q108 101 115 111"/><path d="M135 111 Q142 101 149 111"/></g>
+            <g class="e-oops" stroke-width="2.5"><circle cx="108" cy="108" r="8" fill="#fff"/><circle cx="142" cy="108" r="8" fill="#fff"/><circle cx="108" cy="109" r="2.8" fill="#25324a" stroke="none"/><circle cx="142" cy="109" r="2.8" fill="#25324a" stroke="none"/></g>
+            <!-- нос, рот -->
+            <path d="M123 117 Q125 120 127 117" fill="none" stroke-width="2"/>
+            <path class="mo-idle" d="M115 128 Q125 136 135 128" fill="none"/>
+            <g class="mo-happy"><path d="M112 126 Q125 150 138 126Z" fill="#f0566f"/><path d="M118 138 Q125 133 132 138 Q125 144 118 138Z" fill="#ff98a8" stroke="none"/></g>
+            <ellipse class="mo-oops" cx="125" cy="133" rx="4.5" ry="5.5" fill="#f0566f"/>
+            <path class="mo-think" d="M117 133 Q127 131 135 126" fill="none"/>
+          </g></g></g>
+        </svg>
+        <div class="nametag">Лингва</div><div class="emote" id="em-l"></div>
+      </div>
+    </aside>
+
+    <!-- ================= ИГРА ================= -->
+    <section class="lab" id="lab">
+      <div class="sky" id="sky"><div class="dots" id="dots"></div><svg id="skySvg" viewBox="0 0 520 292" role="img" aria-label="Компас учителя: семь компетенций"></svg></div>
+
+      <div id="play">
+        <div class="lab-head">
+          <div class="lh-l"><span class="chip" id="chip">Раунд 1 / 3</span><span class="rname" id="rname"></span><span class="threads" id="threads">🔗 Связи: 0 из 7</span></div>
+          <div class="tools">
+            <div class="mist" id="mist">Ошибок: 0</div>
+            <button class="btn" id="hintBtn">💡 Подсказка Лингвы</button>
+          </div>
+        </div>
+        <div id="task"></div>
+        <div class="journal" id="journal"></div>
+      </div>
+
+      <!-- финал на той же странице -->
+      <div class="finale" id="finale">
+        <div class="kick">Модуль 3 · Идеи и концепции</div>
+        <h2>Список для Буви готов!</h2>
+        <p class="fin-sub">Вы выяснили, какими компетенциями должен обладать современный учитель: узнали авторов идей, распознали компетенции в работе репетитора и собрали список целиком. Остался последний шаг: получить значок и показать его куратору.</p>
+        <div class="namebox"><label for="nm">Ваше имя для значка</label><input id="nm" maxlength="40" placeholder="Например, Анна Иванова" autocomplete="name"></div>
+
+        <div class="badge" id="badge">
+          <div class="b-top">lingvapolka.ru<small>Значок выполнения задания</small></div>
+          <svg class="b-medal" viewBox="0 0 120 120" aria-hidden="true">
+            <defs><linearGradient id="gm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#25dcb8"/><stop offset="1" stop-color="#1a9fd8"/></linearGradient>
+              <linearGradient id="gg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe38a"/><stop offset="1" stop-color="#e9a82a"/></linearGradient></defs>
+            <circle cx="60" cy="60" r="56" fill="url(#gg)"/><circle cx="60" cy="60" r="46" fill="url(#gm)" stroke="#fff" stroke-width="3"/>
+            <path d="M60 24 l9 22 24 2 -18 16 6 24 -21 -13 -21 13 6 -24 -18 -16 24 -2z" fill="#fff3bd" stroke="#fff" stroke-width="3" stroke-linejoin="round"/>
+          </svg>
+          <div class="b-body">
+            <div class="b-title">Компетенции найдены</div>
+            <div class="b-mod">Модуль 3</div>
+            <div class="b-mod-sub">Компетенции современного учителя</div>
+            <div class="b-game">Игра «Учитель для Буви» · найдено <b>7 из 7</b> компетенций 📋</div>
+            <div class="b-name empty" id="bName">Имя участника</div>
+            <div class="b-stars" id="stars"></div>
+            <div class="b-stats" id="stats"></div>
+            <div class="b-date" id="bDate"></div>
+          </div>
+        </div>
+        <div class="proof">📸 <b>Сделайте скриншот этого значка и отправьте его своему куратору (тьютору).</b> По нему куратор увидит, что вы выполнили задание.
+          <small>Как сделать скриншот: Windows — Win + Shift + S; Mac — Cmd + Shift + 4; телефон — одновременно кнопка питания и кнопка уменьшения громкости.</small></div>
+
+        <div class="duo">
+          <div class="m l"><div class="who">Лингва</div><div id="fin-l"></div></div>
+          <div class="m b"><div class="who">Буквёныш</div><div id="fin-b"></div></div>
+        </div>
+        <div class="gl-h">Список компетенций современного учителя</div>
+        <div class="glossary" id="glossary"></div>
+        <button class="btn go" id="again">🔁 Сыграть ещё раз</button>
+      </div>
+    </section>
+
+    <!-- ================= БУКВЁНЫШ (справа) ================= -->
+    <aside class="side b quiet" id="sideB">
+      <div class="bub bub-b" aria-live="polite"><div class="who">Буквёныш</div><div class="say" id="sayB"></div></div>
+      <div class="fig fig-b">
+        <svg id="buvya" class="char" data-mood="idle" viewBox="0 0 220 240" role="img" aria-label="Буквёныш — учёный кот">
+          <defs><clipPath id="clB"><path d="M110 14 C168 14 208 58 206 118 C204 176 164 222 110 224 C54 224 12 176 14 116 C16 58 54 14 110 14Z"/></clipPath></defs>
+          <path d="M110 14 C168 14 208 58 206 118 C204 176 164 222 110 224 C54 224 12 176 14 116 C16 58 54 14 110 14Z" fill="#eafff9" stroke="#f1bd45" stroke-width="5"/>
+          <g fill="#f6c244"><g transform="translate(40 60)"><use class="tw" href="#spk"/></g><g transform="translate(184 48)"><use class="tw t2" href="#spk" transform="scale(.7)"/></g><g transform="translate(186 168)"><use class="tw t3" href="#spk" transform="scale(.6)"/></g></g>
+          <g clip-path="url(#clB)"><g class="react" id="r-b"><g class="float" stroke="#25324a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <!-- хвост -->
+            <g class="tail" fill="none">
+              <path d="M150 212 C196 214 208 168 178 148" stroke="#25324a" stroke-width="21"/>
+              <path d="M150 212 C196 214 208 168 178 148" stroke="#fff" stroke-width="15"/>
+              <path d="M196 196 L205 190 M200 176 L208 172" stroke="#b9c8d9" stroke-width="3"/>
+            </g>
+            <!-- тело -->
+            <path d="M50 262 C48 202 76 178 110 176 C144 178 172 202 170 262Z" fill="#fff"/>
+            <path d="M92 204 L92 214 M110 200 L110 214 M128 204 L128 214" stroke="#b9c8d9" stroke-width="3" fill="none"/>
+            <!-- бабочка -->
+            <path d="M110 182 L90 172 L90 192Z" fill="#f6c244"/><path d="M110 182 L130 172 L130 192Z" fill="#f6c244"/><circle cx="110" cy="182" r="5.5" fill="#ffe38a"/>
+            <!-- лапка машет -->
+            <g class="wave">
+              <path d="M74 205 Q50 196 46 158" stroke="#25324a" stroke-width="30" fill="none"/>
+              <path d="M74 205 Q50 196 46 158" stroke="#fff" stroke-width="24" fill="none"/>
+              <ellipse cx="45" cy="146" rx="14" ry="16" fill="#fff"/>
+              <path d="M38 138 L38 134 M45 136 L45 132 M52 138 L52 134" stroke="#b9c8d9" stroke-width="2.5" fill="none"/>
+              <ellipse cx="45" cy="150" rx="5" ry="4.2" fill="#ff9fb4" stroke="none"/>
+            </g>
+            <!-- уши -->
+            <g class="ear-l"><path d="M68 84 C60 58 62 40 66 30 C80 36 96 50 104 62Z" fill="#fff"/><path d="M72 66 C72 54 72 46 74 42 C80 46 88 52 92 58Z" fill="#ff9fb4" stroke="none"/></g>
+            <g class="ear-r"><path d="M152 84 C160 58 158 40 154 30 C140 36 124 50 116 62Z" fill="#fff"/><path d="M148 66 C148 54 148 46 146 42 C140 46 132 52 128 58Z" fill="#ff9fb4" stroke="none"/></g>
+            <!-- голова -->
+            <path d="M110 62 C150 60 176 82 174 112 C173 140 148 156 110 156 C72 156 47 140 46 112 C44 82 70 60 110 62Z" fill="#fff"/>
+            <path d="M100 70 L102 80 M110 68 L110 80 M120 70 L118 80" stroke="#b9c8d9" stroke-width="3" fill="none"/>
+            <g stroke="none" fill="#ff9fb4" opacity=".85"><circle cx="68" cy="125" r="8"/><circle cx="152" cy="125" r="8"/></g>
+            <!-- глаза -->
+            <g class="eyes-open e-open" stroke="none"><ellipse cx="86" cy="110" rx="6" ry="8.4" fill="#25324a"/><ellipse cx="134" cy="110" rx="6" ry="8.4" fill="#25324a"/>
+              <g class="pupil" fill="#fff"><circle cx="88" cy="106.6" r="2.2"/><circle cx="136" cy="106.6" r="2.2"/></g></g>
+            <g class="e-happy" fill="none" stroke-width="3.6"><path d="M78 115 Q86 102 94 115"/><path d="M126 115 Q134 102 142 115"/></g>
+            <g class="e-oops" fill="none" stroke-width="3.6"><path d="M80 103 L94 111 L80 119"/><path d="M140 103 L126 111 L140 119"/></g>
+            <!-- нос, рот, усы -->
+            <path d="M105 122 Q110 119 115 122 Q110 129 105 122Z" fill="#ff8fa8" stroke-width="2"/>
+            <path class="mo-idle" d="M110 128 L110 133 M110 133 Q103 139 97 134 M110 133 Q117 139 123 134" fill="none" stroke-width="2.6"/>
+            <g class="mo-happy"><path d="M100 131 Q110 152 120 131Z" fill="#f0566f"/><ellipse cx="110" cy="142" rx="6" ry="3.6" fill="#ff98a8" stroke="none"/></g>
+            <path class="mo-oops" d="M98 140 Q104 132 110 140 T122 140" fill="none" stroke-width="2.6"/>
+            <path class="mo-think" d="M110 128 L110 133 M110 133 Q103 137 99 132 M110 133 Q118 141 126 133" fill="none" stroke-width="2.6"/>
+            <g fill="none" stroke-width="2"><path d="M70 124 L44 118 M70 131 L42 133 M150 124 L176 118 M150 131 L178 133"/></g>
+            <path class="sweat" d="M170 78 Q179 92 170 100 Q161 92 170 78Z" fill="#a8e4ff" stroke-width="2.4"/>
+            <!-- академическая шапочка -->
+            <g transform="rotate(-6 110 62)">
+              <path d="M88 66 L88 80 Q110 90 132 80 L132 66Z" fill="#2f4a7a"/>
+              <path d="M56 60 L110 38 L164 60 L110 82Z" fill="#3b5b94"/>
+              <circle cx="110" cy="60" r="4.5" fill="#f6c244" stroke-width="2"/>
+              <path d="M110 60 L156 64 L158 92" fill="none" stroke="#f6c244" stroke-width="3.4"/>
+              <path d="M153 90 L158 104 L163 90Z" fill="#f6c244" stroke-width="2"/>
+            </g>
+          </g></g></g>
+        </svg>
+        <div class="nametag">Буквёныш</div><div class="emote" id="em-b"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+</div>
+<canvas id="fx"></canvas>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== ДАННЫЕ (модуль 3: «Компетенции современного учителя») ===== */
+/* Портреты: пока вместо фото — значки. Чтобы поставить фото, впишите путь или ссылку, например: PHOTOS = { sok:'sokrat.jpg' } */
+const PHOTOS = {};
+
+/* Педагоги (их советы) и компетенции, которые они подсказывают Буве */
+const P = {
+  sok:{ name:'Сократ', icon:'🏺', color:'#e0a21e', role:'древнегреческий философ (469–399 до н. э.)',
+    fact:'Сократ разработал майевтику, «повивальное искусство»: учитель помогает знанию «родиться» через вопросы. В диалоге Платона «Менон» он говорит: «Я не могу научить никого ничему; я могу только заставить их думать».',
+    cue:'Древнегреческий философ, создатель майевтики, «повивального искусства» вопросов.',
+    c:{ name:'Вопросы вместо готовых ответов', short:'Вопросы', icon:'❓', desc:'Учитель задаёт вопросы и помогает ученику самому прийти к знанию.' } },
+  pes:{ name:'Иоганн Генрих Песталоцци', icon:'🦢', color:'#ff7a9c', role:'швейцарский педагог (1746–1827)',
+    fact:'Песталоцци считал, что образование должно начинаться с развития сердца, затем руки и только потом головы. Без любви учителя к ученикам, по его мнению, они не смогут научиться.',
+    cue:'Швейцарский педагог, автор книг «Как Гертруда учит своих детей» и «Лебединая песня».',
+    c:{ name:'Эмоциональный интеллект', short:'Эмоции', icon:'❤️', desc:'Учитель замечает чувства учеников и выстраивает с ними доверие.' } },
+  dew:{ name:'Джон Дьюи', icon:'🏫', color:'#1aa6d8', role:'философ и педагог (1859–1952)',
+    fact:'Дьюи утверждал, что обучение должно быть практическим и интерактивным: «Образование — это не подготовка к жизни; образование — это сама жизнь». Учитель, по Дьюи, организует опыт, из которого рождается знание.',
+    cue:'Автор книги «Демократия и образование», сторонник обучения через практический опыт.',
+    c:{ name:'Опыт и практика на уроке', short:'Практика', icon:'🛠️', desc:'Знания закрепляются в реальном опыте, а не только в теории.' } },
+  vyg:{ name:'Лев Выготский', icon:'🧠', color:'#10c9a5', role:'психолог (1896–1934)',
+    fact:'Выготский предложил концепцию зоны ближайшего развития и писал: «Обучение идёт впереди развития» («Мышление и речь»). Учителю для этого нужно понимать когнитивные процессы и адаптировать методы.',
+    cue:'Автор идеи «зона ближайшего развития».',
+    c:{ name:'Адаптация обучения к ученику', short:'Адаптация', icon:'🪜', desc:'Учитель подбирает задания и методы под возраст и уровень ученика.' } },
+  hat:{ name:'Джон Хэтти', icon:'📊', color:'#9b6bff', role:'новозеландский исследователь образования',
+    fact:'В книге «Видимое обучение» Хэтти проанализировал более 800 мета-анализов, 52 637 исследований и более 146 000 эффектов. Среди сильных факторов успеха он называет обратную связь и ясность объяснений учителя.',
+    cue:'Новозеландский исследователь, автор «Видимого обучения» и коэффициента d.',
+    c:{ name:'Доказательность и обратная связь', short:'Доказательность', icon:'🔬', desc:'Учитель измеряет результат и даёт понятную обратную связь.' } },
+  blo:{ name:'Бенджамин Блюм', icon:'🎯', color:'#ff8a3c', role:'создатель таксономии образовательных целей',
+    fact:'Таксономия Блума (1956) описывает уровни познания: от знания и понимания к применению, анализу, синтезу и оценке. В 2001 году её пересмотрели: запоминание, понимание, применение, анализ, оценка, создание.',
+    cue:'Автор таксономии образовательных целей: от запоминания до создания нового.',
+    c:{ name:'Оценка глубины понимания', short:'Оценка', icon:'🏆', desc:'Учитель проверяет не только запоминание, но и умение применять знания.' } },
+  lon:{ name:'Кирсти Лонка', icon:'🇫🇮', color:'#2fb860', role:'профессор образовательной психологии, Хельсинкский университет',
+    fact:'Лонка развивает феномено-ориентированное обучение из Финляндии: ученик выбирает явление и рассматривает его с разных сторон, а не изучает отдельные предметы.',
+    cue:'Профессор из Хельсинки, автор идеи обучения через явления (феномены).',
+    c:{ name:'Целостный взгляд на знания', short:'Явления', icon:'🌊', desc:'Учитель показывает мир целиком, через явления, а не только отдельные предметы.' } }
+};
+/* порядок компетенций на «компасе» и их координаты, хаб в центре */
+const SKY = ['sok','pes','dew','vyg','hat','blo','lon'];
+const HUB = [260,146];
+const PTS = SKY.map((_,i)=>{ const a=(-90+i*360/7)*Math.PI/180; return [Math.round(260+212*Math.cos(a)), Math.round(146+92*Math.sin(a))]; });
+
+/* Раунд 1: чья это мысль? Порядок фиксирован: от лёгких к сложным. opts — близкие по смыслу «ловушки». */
+const R1 = [
+  { id:'sok', lvl:1, q:'«Я не могу научить никого ничему. Я могу только заставить их думать».',
+    say:'Хороший учитель не выдаёт готовые ответы, а задаёт вопросы.' },
+  { id:'dew', lvl:1, q:'«Образование — это не подготовка к жизни; образование — это сама жизнь».',
+    say:'Дьюи считал, что учиться нужно через практику и реальный опыт.' },
+  { id:'lon', lvl:1, q:'«Мы учим детей не предметам, а миру».',
+    say:'Лонка предлагает учить через явления, а не через отдельные предметы.' },
+  { id:'pes', lvl:2, q:'«Настоящий учитель должен любить своих учеников, иначе они не смогут научиться».',
+    say:'Без эмоциональной связи, по Песталоцци, обучение теряет смысл.' },
+  { id:'hat', lvl:2, q:'«Если мы не измеряем влияние нашего преподавания, мы работаем вслепую».',
+    say:'Хэтти настаивает: методы должны быть доказательными, а результат измеряемым.' },
+  { id:'vyg', lvl:3, q:'«Обучение идёт впереди развития».', opts:['dew','pes','blo'],
+    say:'Выготский показал: хороший учитель опережает развитие и подстраивает обучение под ученика.' },
+  { id:'blo', lvl:3, q:'«Цель образования — не просто знание, а умение его использовать».', opts:['dew','hat','vyg'],
+    say:'Блюм описал путь от простого запоминания к анализу, оценке и творчеству.' }
+];
+/* Раунд 2: какую компетенцию показывает репетитор? От лёгких к сложным. */
+const R2 = [
+  { id:'sok', lvl:1, q:'Репетитор спрашивает: «А как ты думаешь?» — и ждёт, пока Бувя сам дойдёт до ответа. Какую компетенцию он показывает?', opts:['lon','blo','pes'],
+    hint:'Он подводит вопросами, а не даёт готовый ответ. Вспомните «повивальное искусство» Сократа.',
+    say:'Это майевтика Сократа: знание рождается в диалоге.' },
+  { id:'pes', lvl:1, q:'Бувя расстроился из-за ошибки. Репетитор говорит: «Давай сначала успокоимся, а потом разберём вместе». Какая это компетенция?', opts:['hat','lon','blo'],
+    hint:'Учитель заметил чувства ученика. Вспомните слова Песталоцци о любви и сердце.',
+    say:'Эмоциональный интеллект: учитель учитывает состояние ученика, и тогда обучение становится возможным.' },
+  { id:'dew', lvl:2, q:'Вместо чтения правил репетитор предлагает испечь шарлотку и по ходу работы разобрать граммы и дроби. Какая это компетенция?', opts:['sok','lon','hat'],
+    hint:'Учат через настоящее дело. «Образование — это сама жизнь».',
+    say:'Опыт и практика: знания проверяются и закрепляются в реальной деятельности, как учил Дьюи.' },
+  { id:'hat', lvl:2, q:'После занятия репетитор проверяет, помогли ли его методы, и честно говорит Буве, что получилось и как улучшить результат. Какая это компетенция?', opts:['blo','vyg','pes'],
+    hint:'Учитель измеряет влияние своих методов и даёт понятную обратную связь.',
+    say:'Доказательность и обратная связь: по Хэтти, это одни из сильнейших факторов успеха ученика.' },
+  { id:'vyg', lvl:3, q:'Задание оказалось лёгким, и репетитор усложняет его так, чтобы Бувя справился с небольшой помощью. Какая это компетенция?', opts:['blo','hat','dew'],
+    hint:'Задача чуть выше уровня «сам», но посильна «с помощью». Это про зону ближайшего развития.',
+    say:'Адаптация обучения: учитель подбирает задания под уровень ученика, как рекомендовал Выготский.' },
+  { id:'blo', lvl:3, q:'Репетитор проверяет не только, запомнил ли Бувя правило, но и умеет ли он применить его, объяснить и придумать своё задание. Какая это компетенция?', opts:['dew','vyg','hat'],
+    hint:'Проверяются разные уровни: запомнить, применить, оценить, создать. Это таксономия Блума.',
+    say:'Оценка глубины понимания: хороший учитель видит, на каком уровне ученик знает материал.' }
+];
+const LVL = {1:'🟢 лёгкий',2:'🟡 средний',3:'🔴 сложный'};
+const TOTAL_STEPS = 15;
+
+const OOPS = [
+  'Мяу?! Не то. Даже мои усы это чувствуют. Подумайте ещё! 🐾',
+  'Мррр… кажется, не подходит. Давайте подумаем ещё разок!',
+  'Ой-ой, хвост дрожит. Перечитайте внимательнее!',
+  'Мимо! Усы сказали «нет». Но со второго раза получится! 😼',
+  'Пф-ф, такого учителя я бы не взял. Подумайте ещё разок!'
+];
+const PRAISE = ['Блестяще!','Браво!','Точно!','Ура!','Верно!','Отлично!'];
+const OKB = ['Записываю в тетрадь! ✍️','Мур-р! В список Буви попадает ещё одна компетенция!','Ух ты, запомню! 📋','Теперь я точно знаю, чего искать в учителе! 🔍'];
+const IDLEB = ['Я прижал уши и думаю вместе с вами. 🐾','Где-то тут прячется ответ… Мур!','Пока вы думаете, я точу карандаш. ✏️','Усы подсказывают: читайте внимательно!'];
+
+/* ===== СОСТОЯНИЕ ===== */
+const S = { phase:1, qs:[], qi:0, lit:[], rays:[], rings:[], mistakes:0, hints:0, qMiss:0, qHint:false, answered:false, sel:null, pairs:0, sound:true, done:false, locked:false, hintN:{} };
+const $ = s => document.querySelector(s);
+const NS='http://www.w3.org/2000/svg';
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+let timers = {};
+const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ===== ЗВУК ===== */
+let actx=null;
+function tone(f,t,d,type,g){ const o=actx.createOscillator(),v=actx.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,actx.currentTime+t);
+  v.gain.setValueAtTime(0.0001,actx.currentTime+t); v.gain.exponentialRampToValueAtTime(g||.08,actx.currentTime+t+.02); v.gain.exponentialRampToValueAtTime(.0001,actx.currentTime+t+d);
+  o.connect(v); v.connect(actx.destination); o.start(actx.currentTime+t); o.stop(actx.currentTime+t+d+.05); return o; }
+function sfx(k){ if(!S.sound) return; try{
+  actx = actx || new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume();
+  if(k==='ok'){ [523,659,784,1047].forEach((f,i)=>tone(f,i*.08,.28,'triangle',.09)); }
+  else if(k==='bad'){ const o=tone(220,0,.3,'sawtooth',.06); o.frequency.exponentialRampToValueAtTime(110,actx.currentTime+.3); tone(160,.18,.25,'square',.04); }
+  else if(k==='sel'){ tone(660,0,.1,'sine',.06); }
+  else if(k==='hint'){ tone(880,0,.16,'sine',.06); tone(1320,.1,.25,'sine',.05); }
+  else if(k==='next'){ [392,523,659].forEach((f,i)=>tone(f,i*.07,.2,'triangle',.07)); }
+  else if(k==='win'){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.35,'triangle',.09)); }
+}catch(e){} }
+$('#snd').addEventListener('click',()=>{ S.sound=!S.sound; $('#snd').textContent=S.sound?'🔊':'🔇'; if(S.sound) sfx('sel'); });
+
+/* ===== ПЕРСОНАЖИ / ДИАЛОГ ===== */
+const sideL=$('#sideL'), sideB=$('#sideB');
+function say(who, html){
+  const l = who==='l';
+  const el = $(l?'#sayL':'#sayB'); el.innerHTML = html;
+  el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop');
+  sideL.classList.toggle('talk',l); sideL.classList.toggle('quiet',!l);
+  sideB.classList.toggle('talk',!l); sideB.classList.toggle('quiet',l);
+}
+function mood(who, m, ms){
+  const el = $(who==='l'?'#lingva':'#buvya'); el.dataset.mood = m;
+  clearTimeout(timers[who]);
+  if(ms) timers[who] = setTimeout(()=>{ el.dataset.mood='idle'; }, ms);
+}
+function react(who, cls){ const el=$(who==='l'?'#r-l':'#r-b'); el.classList.remove('hop','shake'); void el.getBoundingClientRect(); el.classList.add(cls); }
+function emote(who, text){ const e=$(who==='l'?'#em-l':'#em-b'); e.textContent=text; e.classList.remove('go'); void e.offsetWidth; e.classList.add('go'); }
+
+(function bg(){
+  const g='Ж ß あ Ω ñ Я 文 é α ç 한 ä Ш ø ü ع λ ж ğ'.split(' '), bg=$('#bg');
+  for(let i=0;i<16;i++){ const s=document.createElement('span'); s.className='glyph'; s.textContent=g[i%g.length];
+    s.style.left=(Math.random()*100)+'%'; s.style.fontSize=(24+Math.random()*50)+'px'; s.style.animationDuration=(18+Math.random()*20)+'s'; s.style.animationDelay=(-Math.random()*30)+'s'; bg.appendChild(s); }
+})();
+
+/* ===== ПОРТРЕТЫ ===== */
+function portrait(id){ return PHOTOS[id] ? `<img src="${PHOTOS[id]}" alt="${P[id].name}">` : P[id].icon; }
+
+/* ===== «КОМПАС УЧИТЕЛЯ»: доска с семью компетенциями ===== */
+const skySvg=$('#skySvg'), sky=$('#sky');
+function el(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+function buildSky(){
+  skySvg.innerHTML=''; sky.classList.remove('shine');
+  SKY.forEach((id,i)=>{ el('line',{class:'edge base',x1:HUB[0],y1:HUB[1],x2:PTS[i][0],y2:PTS[i][1]},skySvg); });
+  SKY.forEach((id,i)=>{ el('line',{class:'edge lit',id:'edge'+i,x1:HUB[0],y1:HUB[1],x2:PTS[i][0],y2:PTS[i][1],pathLength:1},skySvg); });
+  const cap=el('text',{class:'cap',x:18,y:26},skySvg); cap.textContent='КОМПАС УЧИТЕЛЯ';
+  const hub=el('g',{class:'hub',transform:`translate(${HUB[0]} ${HUB[1]})`},skySvg);
+  el('circle',{class:'hubc',r:36,fill:'#ffd96a',opacity:.22},hub);
+  el('circle',{r:30,fill:'#fff3bd',stroke:'#f6c244','stroke-width':3},hub);
+  const ht=el('text',{'text-anchor':'middle',dy:'.35em','font-size':30},hub); ht.textContent='👩‍🏫';
+  SKY.forEach((id,i)=>{
+    const [x,y]=PTS[i], c=P[id].color;
+    const g=el('g',{class:'st',id:'st-'+id,transform:`translate(${x} ${y})`},skySvg);
+    el('circle',{class:'halo',r:40},g);
+    el('path',{class:'spark',d:'M0,-11 L3.2,-3.6 L11,-3.4 L4.9,1.5 L7,9 L0,4.6 L-7,9 L-4.9,1.5 L-11,-3.4 L-3.2,-3.6Z'},g);
+    el('circle',{class:'ringc',r:27},g);
+    const m=el('g',{class:'med'},g);
+    el('circle',{r:27,fill:'#fff3bd',stroke:'#f6c244','stroke-width':3},m);
+    el('circle',{r:22,fill:c,'fill-opacity':.35},m);
+    const t=el('text',{'text-anchor':'middle',dy:'.35em','font-size':24},m); t.textContent=P[id].c.icon;
+    const lb=el('text',{class:'lab',y:47},g); lb.textContent=P[id].c.short;
+    if(S.lit.includes(id)) g.classList.add('on');
+    if(S.rings.includes(id)) g.classList.add('ring');
+  });
+  S.rays.forEach(id=>{ const e=$('#edge'+SKY.indexOf(id)); e.classList.add('on'); e.style.strokeDashoffset='0'; e.style.animation='none'; });
+}
+(function dots(){ const d=$('#dots'); for(let i=0;i<40;i++){ const s=document.createElement('i'); const r=1+Math.random()*2; s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${r}px;height:${r}px;animation-delay:${-Math.random()*3}s;animation-duration:${2+Math.random()*3}s`; d.appendChild(s);} })();
+function starPos(id){ const r=$('#st-'+id).getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2}; }
+function edgePos(id){ const r=$('#edge'+SKY.indexOf(id)).getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2}; }
+function lightStar(id){ $('#st-'+id).classList.add('on'); const p=starPos(id); burst(p.x,p.y,'#ffd96a',34); burst(p.x,p.y,'#fff',14); }
+function drawEdge(id){ const e=$('#edge'+SKY.indexOf(id)); e.style.animation=''; e.style.strokeDashoffset=''; e.classList.add('on'); const p=edgePos(id); burst(p.x,p.y,'#ffd96a',22); }
+function fly(fromEl,to,done){
+  if(!document.body.animate || REDUCED){ done(); return; }
+  const f=fromEl.getBoundingClientRect(), x=f.left+f.width/2, y=f.top+f.height/2;
+  const e=document.createElement('div'); e.className='fly'; e.textContent='📋'; document.body.appendChild(e);
+  const mx=(x+to.x)/2, my=Math.min(y,to.y)-70, o=17;
+  const an=e.animate([
+    {transform:`translate(${x-o}px,${y-o}px) scale(.4) rotate(-30deg)`,opacity:0},
+    {transform:`translate(${x-o}px,${y-o-40}px) scale(1.5) rotate(10deg)`,opacity:1,offset:.2},
+    {transform:`translate(${mx-o}px,${my-o}px) scale(1.2) rotate(-12deg)`,opacity:1,offset:.55},
+    {transform:`translate(${to.x-o}px,${to.y-o}px) scale(.7) rotate(30deg)`,opacity:.95}
+  ],{duration:1000,easing:'ease-in-out'});
+  an.onfinish=()=>{ e.remove(); done(); };
+}
+
+/* ===== ПРОГРЕСС ===== */
+function updateProgress(){
+  $('#count').textContent=S.lit.length;
+  const total = S.lit.length + S.rays.length + S.pairs/7*1;
+  $('#tube').style.width=Math.min(100,total/TOTAL_STEPS*100)+'%';
+  $('#mist').textContent='Ошибок: '+S.mistakes;
+  $('#threads').textContent='🔗 Связи: '+S.rays.length+' из 7';
+}
+
+/* ===== ЖУРНАЛ ===== */
+const journal=$('#journal'), task=$('#task');
+function showRules(){
+  journal.style.borderColor='';
+  const r3 = S.phase===3;
+  journal.innerHTML = r3
+   ? `<div class="steps"><div class="step"><span class="n">👆</span><span>Выберите <b>педагога</b> слева или <b>компетенцию</b> справа.</span></div>
+      <div class="step"><span class="n">🔗</span><span>Затем нажмите на подходящую карточку из другого столбца.</span></div>
+      <div class="step"><span class="n">📋</span><span>Каждая верная пара зажигает кольцо у компетенции. Когда пар станет 7, список Буви будет готов!</span></div></div>`
+   : S.phase===1
+   ? `<div class="steps"><div class="step"><span class="n">👆</span><span>Прочитайте мысль и выберите <b>педагога</b>, которому она принадлежит.</span></div>
+      <div class="step"><span class="n">📋</span><span>Верный ответ добавляет в список Буви <b>компетенцию</b> современного учителя.</span></div>
+      <div class="step"><span class="n">💡</span><span>Если трудно, нажмите «Подсказка Лингвы». Ошибки не страшны: Буквёныш поможет подумать ещё.</span></div></div>`
+   : `<div class="steps"><div class="step"><span class="n">🔍</span><span>Прочитайте, что делает репетитор, и выберите <b>компетенцию</b>, которую он показывает.</span></div>
+      <div class="step"><span class="n">🔗</span><span>Верный ответ протянет связь от «учителя» к этой компетенции.</span></div>
+      <div class="step"><span class="n">💡</span><span>Если трудно, нажмите «Подсказка Лингвы»: она уберёт два неверных варианта.</span></div></div>`;
+}
+function showDiscovery(id, label, nextText){
+  const t=P[id], c=t.color;
+  journal.style.borderColor=c;
+  journal.innerHTML=`<div class="j-icon pop" style="border-color:${c}">${portrait(id)}</div>
+    <div class="j-main pop"><div class="j-kicker">${label} · А вы знали?</div><div class="j-title">${t.name}</div><div class="j-role">${t.role}</div>
+    <div class="j-fact">${t.fact}</div><div class="j-fact" style="margin-top:8px"><b>Компетенция для списка Буви:</b> ${t.c.icon} ${t.c.name}. ${t.c.desc}</div></div>
+    ${nextText?`<div class="j-act"><button class="btn go pulse" id="nextBtn">${nextText}</button></div>`:''}`;
+  if(nextText) $('#nextBtn').addEventListener('click',nextQ);
+}
+
+/* ===== РАУНДЫ 1 и 2 ===== */
+const RNAME = {1:'Чья это мысль?',2:'Какая это компетенция?',3:'Соберите список'};
+function setChip(){ $('#chip').textContent='Раунд '+S.phase+' / 3'; $('#rname').textContent=RNAME[S.phase]; }
+function mico(inner){ return `<span class="mico">${inner}</span>`; }
+function showQ(){
+  S.answered=false; S.qMiss=0; S.qHint=false; S.locked=false;
+  const item=S.qs[S.qi];
+  const others=item.opts ? item.opts.slice() : shuffle(SKY.filter(x=>x!==item.id)).slice(0,3);
+  const opts=shuffle([item.id,...others]);
+  const kick = (S.phase===1 ? 'Чья это мысль?' : 'Репетитор в деле')+' · '+LVL[item.lvl];
+  const btn = id => S.phase===1
+    ? `${mico(portrait(id))}<span class="nm">${P[id].name}</span>`
+    : `${mico(P[id].c.icon)}<span class="nm">${P[id].c.name}</span>`;
+  task.innerHTML=`<div class="q enter"><div class="q-kick">${kick} · ${S.qi+1} из ${S.qs.length}</div><div class="q-text">${item.q}</div></div>
+    <div class="opts">${opts.map((id,i)=>`<button class="opt enter${S.phase===2?' comp':''}" data-id="${id}" style="--c:${P[id].color};animation-delay:${80+i*70}ms">${btn(id)}<span class="tick">✓</span></button>`).join('')}</div>`;
+  task.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',()=>choose(b)));
+  setChip(); showRules();
+  $('#hintBtn').classList.remove('pulse');
+}
+function choose(btn){
+  if(S.answered||S.locked||S.done) return;
+  const item=S.qs[S.qi], id=btn.dataset.id;
+  if(id===item.id) correct(btn,item); else wrong(btn,item);
+}
+function wrong(btn,item){
+  S.mistakes++; S.qMiss++;
+  btn.classList.remove('no'); void btn.offsetWidth; btn.classList.add('no'); btn.disabled=true;
+  sfx('bad'); updateProgress();
+  mood('b','oops',3000); react('b','shake'); emote('b','Мяу?!'); mood('l','think',3000);
+  say('b',pick(OOPS));
+  if(S.qMiss>=2) $('#hintBtn').classList.add('pulse');
+  say('l', S.qMiss>=2 ? 'Не торопитесь. Нажмите «💡 Подсказка Лингвы»: я уберу два неверных варианта.' : (S.phase===1?'Перечитайте мысль и подумайте, чья она.':'Перечитайте, что делает репетитор, и подумайте, какая это компетенция.'));
+}
+function correct(btn,item){
+  S.answered=true; S.locked=true;
+  const id=item.id;
+  task.querySelectorAll('.opt').forEach(b=>{ b.disabled=true; if(b===btn) b.classList.add('ok'); else b.classList.add('dimmed'); });
+  sfx('ok');
+  const r=btn.getBoundingClientRect(); burst(r.left+r.width/2, r.top+r.height/2, P[id].color, 34);
+  mood('l','happy',3200); react('l','hop');
+  const last = S.qi===S.qs.length-1;
+  const nextText = last ? (S.phase===1?'Дальше — раунд 2 ➜':'Дальше — финал ➜') : 'Дальше ➜';
+  if(S.phase===1){
+    say('l',`${pick(PRAISE)} Это <em>${P[id].name}</em>. ${item.say} Компетенция для списка: <em>${P[id].c.name}</em>.`);
+    S.lit.push(id);
+    showDiscovery(id,`📋 Компетенция ${S.lit.length} из 7`,nextText);
+    fly(btn,starPos(id),()=>{ lightStar(id); updateProgress(); mood('b','happy',2800); react('b','hop'); emote('b',pick(['Мур!','Ура-мяу!','Ого!'])); say('b',pick(OKB)+(S.lit.length===7?'<br><br>Все семь компетенций в списке! Но как они связаны с хорошим учителем?':'')); S.locked=false; });
+  } else {
+    say('l',`${pick(PRAISE)} Это <em>${P[id].c.name}</em>. ${item.say}`);
+    S.rays.push(id);
+    showDiscovery(id,`🔗 Связь ${S.rays.length} из 7`,nextText);
+    fly(btn,edgePos(id),()=>{ drawEdge(id); updateProgress(); mood('b','happy',2800); react('b','hop'); emote('b',pick(['Мур!','Сияет!','Ого!'])); say('b',S.rays.length<6?'Компетенция связалась с идеальным учителем! ✨':'Остался последний штрих, и список будет готов! 📋'); S.locked=false; });
+  }
+}
+function nextQ(){
+  if(!S.answered || S.locked) return;
+  sfx('next');
+  if(S.qi<S.qs.length-1){
+    S.qi++; showQ(); scrollToLab();
+    say('l', S.phase===1 ? pick(['Чья эта мысль? Выберите педагога.','Следующий совет. Узнаете автора?','Кто это сказал? Вспомните лекцию.','Ещё одна компетенция ждёт вас в списке Буви!'])
+                         : pick(['Новое наблюдение за репетитором! Какая это компетенция?','Что делает репетитор в этот раз?','Какую компетенцию вы видите?']));
+    say('b',pick(IDLEB)); mood('l','idle');
+    const pl=S.qs[S.qi-1].lvl, cl=S.qs[S.qi].lvl;
+    if(cl>pl) say('l', cl===2 ? 'Уровень выше: теперь вопросы 🟡 среднего уровня. Варианты станут ближе по смыслу!' : 'Самые сложные вопросы! 🔴 Варианты очень похожи, читайте внимательно.');
+    return;
+  }
+  if(S.phase===1) startRound2(); else startRound3();
+}
+function scrollToLab(){ const r=$('#lab').getBoundingClientRect(); if(r.top<-30||r.top>innerHeight*.5) window.scrollTo({top:Math.max(0,r.top+scrollY-12),behavior:'smooth'}); }
+function startRound2(){
+  S.phase=2; S.qs=R2.slice(); S.qi=0; showQ(); scrollToLab();
+  say('b','Список есть! Но как узнать эти компетенции у настоящего репетитора? 🤔 Давайте посмотрим на его занятия.');
+  say('l','Раунд 2! Бувя наблюдает за репетитором. Определите, какую компетенцию он показывает, и между «учителем» и этой компетенцией появится связь. 🔗'); mood('l','happy',2500); mood('b','idle'); emote('b','Мур!');
+}
+
+/* ===== РАУНД 3: собери список ===== */
+let mS=null, mK=null;
+function startRound3(){
+  S.phase=3; S.pairs=0; S.sel=null; S.rings=[]; S.answered=false;
+  const L=shuffle(SKY), R=shuffle(SKY);
+  task.innerHTML=`<div class="q enter"><div class="q-kick">Финал · соедините пары</div><div class="q-text">Последняя связь замкнёт список. Сопоставьте каждого педагога с компетенцией, которую он подсказал Буве.</div></div>
+    <div class="match"><div class="mcol" id="mS">${L.map(id=>`<button class="mc sc enter" data-id="${id}" data-side="s" style="--c:${P[id].color}">${mico(portrait(id))}<span class="nm">${P[id].name}</span></button>`).join('')}</div>
+    <div class="mcol" id="mK">${R.map(id=>`<button class="mc enter" data-id="${id}" data-side="k" style="--c:${P[id].color}"><span class="nm">${P[id].c.icon} ${P[id].c.name}</span></button>`).join('')}</div></div>`;
+  task.querySelectorAll('.mc').forEach(c=>c.addEventListener('click',()=>mclick(c)));
+  mS=$('#mS'); mK=$('#mK'); setChip(); showRules(); scrollToLab();
+  say('b','Последний штрих! Я хочу увидеть полный список компетенций. ✨');
+  say('l','Финал! Соедините педагогов с компетенциями: нажмите на педагога, затем на подходящую компетенцию. 🔗'); mood('l','happy',2500); emote('l','📋');
+}
+function clearSel(){ task.querySelectorAll('.mc.selected').forEach(n=>n.classList.remove('selected')); S.sel=null; }
+function mclick(c){
+  if(c.classList.contains('matched')||S.done||S.locked) return;
+  if(S.sel===c){ clearSel(); return; }
+  if(!S.sel || S.sel.dataset.side===c.dataset.side){
+    clearSel(); S.sel=c; c.classList.add('selected'); sfx('sel'); mood('l','think',2500);
+    say('l', c.dataset.side==='s' ? `Выбран <em>${P[c.dataset.id].name}</em>. Какую компетенцию он подсказал Буве?` : 'Компетенция выбрана. Чей это совет? Найдите педагога слева.');
+    return;
+  }
+  const a=S.sel; clearSel(); attemptPair(a,c);
+}
+function attemptPair(a,b){
+  const s=a.dataset.side==='s'?a:b, k=a.dataset.side==='s'?b:a, id=s.dataset.id;
+  if(id===k.dataset.id){
+    s.classList.add('matched'); k.classList.add('matched'); S.pairs++; S.rings.push(id);
+    $('#st-'+id).classList.add('ring');
+    sfx('ok'); const r=k.getBoundingClientRect(); burst(r.left+r.width/2,r.top+r.height/2,P[id].color,30); const p=starPos(id); burst(p.x,p.y,P[id].color,20);
+    updateProgress();
+    mood('l','happy',2500); react('l','hop'); mood('b','happy',2500); react('b','hop');
+    journal.style.borderColor=P[id].color;
+    journal.innerHTML=`<div class="j-icon pop" style="border-color:${P[id].color}">${portrait(id)}</div><div class="j-main pop"><div class="j-kicker">🔗 Пара ${S.pairs} из 7</div><div class="j-title">${P[id].name}: ${P[id].c.name}</div><div class="j-fact">${P[id].c.desc}</div></div>`;
+    if(S.pairs===7){ say('l','Все пары собраны! Смотрите на доску! 📋'); say('b','Мяу-у-у! Список готов! 🌟'); setTimeout(finalShine,500); }
+    else { say('l',`${pick(PRAISE)} <em>${P[id].name}</em> и компетенция найдены. Осталось пар: ${7-S.pairs}.`); say('b',pick(OKB)); }
+  } else {
+    S.mistakes++; [s,k].forEach(n=>{ n.classList.remove('wrong'); void n.offsetWidth; n.classList.add('wrong'); setTimeout(()=>n.classList.remove('wrong'),600); });
+    sfx('bad'); updateProgress(); mood('b','oops',3000); react('b','shake'); emote('b','Мяу?!'); mood('l','think',3000);
+    say('b',pick(OOPS));
+    say('l','Не пара. Вспомните, что подсказал педагог, или нажмите «💡 Подсказка Лингвы».');
+    $('#hintBtn').classList.add('pulse');
+  }
+}
+function finalShine(){
+  S.locked=true;
+  SKY.forEach(id=>{ if(!S.rays.includes(id)){ S.rays.push(id); drawEdge(id); } });
+  updateProgress(); sky.classList.add('shine'); sfx('win');
+  const r=sky.getBoundingClientRect(); for(let i=0;i<5;i++) setTimeout(()=>burst(r.left+r.width*(.15+Math.random()*.7), r.top+r.height*(.2+Math.random()*.6), pick(['#ffd96a','#fff','#10c9a5','#ff7a9c']), 30), i*220);
+  mood('l','cheer'); mood('b','cheer'); emote('b','Ура-мяу!'); emote('l','📋');
+  window.scrollTo({top:Math.max(0,sky.getBoundingClientRect().top+scrollY-14),behavior:'smooth'});
+  setTimeout(finish,3200);
+}
+
+/* ===== ПОДСКАЗКА ===== */
+$('#hintBtn').addEventListener('click',()=>{
+  if(S.done||S.locked) return;
+  $('#hintBtn').classList.remove('pulse');
+  if(S.phase<3){
+    if(S.answered){ say('l','Ответ уже найден! Прочитайте факт ниже и нажмите «Дальше». 🙂'); return; }
+    const item=S.qs[S.qi];
+    if(!S.qHint){ S.qHint=true; S.hints++; }
+    sfx('hint'); mood('l','think',3500); react('l','hop'); emote('l','💡');
+    const wrongs=[...task.querySelectorAll('.opt')].filter(b=>b.dataset.id!==item.id && !b.classList.contains('gone') && !b.disabled);
+    shuffle(wrongs).slice(0,2).forEach(b=>b.classList.add('gone'));
+    say('l',`Подсказка: ${S.phase===1?P[item.id].cue:item.hint}<br>Два неверных варианта я убрала.`);
+    say('b','Мур, подсказка! Но выбор за вами. 🐾');
+  } else {
+    const un=SKY.filter(id=>!S.rings.includes(id));
+    if(!un.length) return;
+    let id = S.sel ? S.sel.dataset.id : un[0];
+    if(!un.includes(id)) id=un[0];
+    S.hints++; S.hintN[id]=(S.hintN[id]||0)+1;
+    sfx('hint'); mood('l','think',3500); react('l','hop'); emote('l','💡');
+    let txt=`Подсказка к педагогу <em>${P[id].name}</em>: ${P[id].cue}`;
+    if(S.hintN[id]>=2){ const kc=mK.querySelector(`[data-id="${id}"]`); kc.classList.add('hinted'); setTimeout(()=>kc.classList.remove('hinted'),4500); txt+='<br>Одна карточка справа замерцала ✨'; }
+    say('l',txt);
+  }
+});
+
+/* ===== ФИНАЛ ===== */
+function fmtDate(){ const d=new Date(); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear(); }
+function finish(){
+  S.done=true;
+  const bad=S.mistakes+S.hints, stars=bad<=3?3:bad<=8?2:1;
+  $('#play').style.display='none';
+  $('#stars').innerHTML=[1,2,3].map(i=>`<span class="star ${i>stars?'off':''}" style="animation-delay:${.3+i*.25}s">⭐</span>`).join('');
+  $('#stats').textContent=`Ошибок: ${S.mistakes} · Подсказок: ${S.hints}`;
+  $('#bDate').textContent='Дата: '+fmtDate();
+  const lt = stars===3?'Это блестящий результат! Вы уверенно распознаёте компетенции и знаете, чьи это идеи.':stars===2?'Отличная работа! Ошибки помогают запомнить: теперь каждая компетенция связана с педагогом и ситуацией.':'Вы прошли всю игру, и это уже победа! Загляните в список ниже и сыграйте ещё раз, чтобы получить больше звёзд.';
+  $('#fin-l').innerHTML='Поздравляю! 🎉 '+lt+' Эти идеи пригодятся вам в заданиях модуля.';
+  $('#fin-b').innerHTML='Теперь я знаю, какого учителя искать! Список готов, и я иду выбирать лучшего репетитора. Спасибо, что помогли мне! 📋✨';
+  $('#glossary').innerHTML=SKY.map(id=>`<div class="gl" style="--c:${P[id].color}"><b>${P[id].c.icon} ${P[id].c.name}</b>${P[id].name}. ${P[id].c.desc}</div>`).join('');
+  $('#finale').classList.add('show');
+  say('l','Список компетенций собран! 📋 Сделайте скриншот значка и отправьте куратору.');
+  say('b','Мур-р! Я нарисую на значке звёздочку. ⭐');
+  mood('l','cheer'); mood('b','cheer'); emote('l','🏆');
+  confettiRain();
+  const top=$('#lab').getBoundingClientRect().top+window.scrollY-12; window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+}
+$('#nm').addEventListener('input',e=>{
+  const v=e.target.value.trim(), n=$('#bName');
+  n.textContent=v||'Имя участника'; n.classList.toggle('empty',!v);
+});
+$('#again').addEventListener('click',()=>{
+  Object.assign(S,{phase:1,qs:R1.slice(),qi:0,lit:[],rays:[],rings:[],mistakes:0,hints:0,qMiss:0,qHint:false,answered:false,sel:null,pairs:0,done:false,locked:false,hintN:{}});
+  $('#finale').classList.remove('show'); $('#play').style.display='';
+  buildSky(); showQ(); updateProgress();
+  mood('l','happy',2500); mood('b','idle'); react('l','hop');
+  say('b','Давайте снова составим список! Теперь вы знаете, где прячутся ответы. 📋');
+  say('l','Начинаем заново! Попробуйте обойтись без ошибок и подсказок. 😉');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ===== ЭФФЕКТЫ ===== */
+const cv=$('#fx'), cx=cv.getContext('2d'); let parts=[], raf=0;
+function fit(){ const r=window.devicePixelRatio||1; cv.width=innerWidth*r; cv.height=innerHeight*r; cx.setTransform(r,0,0,r,0,0); }
+fit(); window.addEventListener('resize',fit);
+function burst(x,y,color,n){
+  const pal=[color,'#fff',color,'#f6c244'];
+  for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=2+Math.random()*7;
+    parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-2,g:.22,life:1,dec:.016+Math.random()*.02,r:3+Math.random()*5,c:pal[i%pal.length],star:Math.random()<.35,rot:Math.random()*6}); }
+  loop();
+}
+function confettiRain(){
+  const pal=['#10c9a5','#ff7a9c','#f6c244','#1aa6d8','#9b6bff','#ff9a3c'];
+  let n=0; const iv=setInterval(()=>{
+    for(let i=0;i<14;i++) parts.push({x:Math.random()*innerWidth,y:-20,vx:(Math.random()-.5)*3,vy:2+Math.random()*4,g:.05,life:1,dec:.004+Math.random()*.004,r:5+Math.random()*6,c:pal[Math.floor(Math.random()*pal.length)],rect:true,rot:Math.random()*6,vr:(Math.random()-.5)*.3});
+    loop(); if(++n>26) clearInterval(iv); },110);
+}
+function loop(){ if(raf) return; const step=()=>{
+  cx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.life>0 && p.y<innerHeight+30);
+  parts.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=p.g; p.vx*=.99; p.life-=p.dec; p.rot+=p.vr||.1;
+    cx.save(); cx.globalAlpha=Math.max(0,Math.min(1,p.life*1.5)); cx.translate(p.x,p.y); cx.rotate(p.rot); cx.fillStyle=p.c;
+    if(p.rect) cx.fillRect(-p.r,-p.r/2,p.r*2,p.r);
+    else if(p.star){ cx.beginPath(); for(let i=0;i<8;i++){ const rr=i%2?p.r*.45:p.r*1.5, a=i*Math.PI/4; cx.lineTo(Math.cos(a)*rr,Math.sin(a)*rr);} cx.closePath(); cx.fill(); }
+    else { cx.beginPath(); cx.arc(0,0,p.r,0,7); cx.fill(); }
+    cx.restore(); });
+  if(parts.length) raf=requestAnimationFrame(step); else { raf=0; cx.clearRect(0,0,innerWidth,innerHeight); } };
+  raf=requestAnimationFrame(step); }
+
+/* ===== СТАРТ ===== */
+S.qs=R1.slice(); buildSky(); showQ(); updateProgress();
+say('b','Мяу! Я собираюсь в школу, а ещё лучше к хорошему репетитору. Но как понять, какой учитель хороший? 🤔');
+say('l','Привет! Я <em>Лингва</em>, а со мной кот <em>Буквёныш</em>. 😺 Он хочет понять, какими компетенциями должен обладать современный учитель. Давайте поможем составить список! Великие педагоги из нашей лекции подскажут по одной компетенции. 📋');
+mood('l','happy',3200); react('l','hop');
+setTimeout(()=>{ emote('b','Мур-р!'); react('b','hop'); },900);
+})();
+
+</script>
+</body>
+</html>
